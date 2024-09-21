@@ -1,7 +1,20 @@
-import { Schema, model } from "mongoose";
+import { Schema, model,Document } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-const userSchema = new Schema(
+type userSchemaTypes = Document & {
+  fullName :string,
+  email:string,
+  password:string,
+  chats:Schema.Types.ObjectId[],
+  role:"user"| "guest",
+  refreshToken:string,
+  verifyPassword(password:string):Promise<boolean>,
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
+  generateAuthTokens(): { accessToken: string; refreshToken: string };
+
+}
+const userSchema = new Schema <userSchemaTypes>(
   {
     fullName: {
       type: String,
@@ -29,6 +42,10 @@ const userSchema = new Schema(
       enum: ["user", "guest"],
       required: true,
     },
+    refreshToken:{
+      type:String,
+      required:true
+    }
   },
   { timestamps: true }
 );
@@ -65,9 +82,19 @@ userSchema.methods.generateRefreshToken = function () {
   );
 };
 
+userSchema.methods.generateAuthTokens = async function() {
+  const accessToken = this.generateAccessToken();
+  const refreshToken = this.generateRefreshToken();
+  
+  // Save refreshToken to the user model
+  this.refreshToken = refreshToken;
+  await this.save({ validateBeforeSave: false }); // Save the user with the new refreshToken
+
+  return { accessToken, refreshToken };
+};
 userSchema.virtual("name").get(function () {
   return this.fullName;
 });
 // When you access user.name, it will return the value of user.fullName.
 // This provides flexibility in your code without adding an extra field to your database schema.
-export const User = model("User", userSchema);
+export const User = model<userSchemaTypes>("User", userSchema);

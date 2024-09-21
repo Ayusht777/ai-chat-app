@@ -3,7 +3,7 @@ type asyncHandlerTypes = (
   req: Request,
   res: Response,
   next: NextFunction
-) => Promise<void>;
+) => Promise<any>;
 const asyncHandler = (fn: asyncHandlerTypes) => {
   return (req: Request, res: Response, next: NextFunction) =>
     Promise.resolve(fn(req, res, next).catch((err) => next(err)));

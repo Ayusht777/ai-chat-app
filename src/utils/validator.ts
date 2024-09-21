@@ -4,15 +4,16 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PASSWORD_REGEX =
   /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 
-const validator = (fullName: string, email: string, password: string): boolean => {
-  if (fullName.length < 3 || fullName.length > 50) {
-    throw new ApiError(
-      411,
-      "Full name must be between 3 and 50 characters long"
-    );
+const validator = ( email: string, password: string,fullName?: string): boolean => {
+  if(fullName !== undefined){
+    if (fullName.length < 3 || fullName.length > 50) {
+      throw new ApiError(
+        411,
+        "Full name must be between 3 and 50 characters long"
+      );
+    }
   }
-
-  if (!EMAIL_REGEX.test(email)) {
+ if (!EMAIL_REGEX.test(email)) {
     throw new ApiError(406, "Invalid email format");
   }
 
